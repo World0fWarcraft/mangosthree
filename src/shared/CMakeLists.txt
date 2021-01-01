@@ -53,6 +53,9 @@ set(SRC_GRP_DATASTORE
   DataStores/DBCFileLoader.cpp
   DataStores/DBCFileLoader.h
   DataStores/DBCStore.h
+  DataStores/DB2FileLoader.cpp
+  DataStores/DB2FileLoader.h
+  DataStores/DB2Store.h
 )
 source_group("DataStores" FILES ${SRC_GRP_DATASTORE})
 

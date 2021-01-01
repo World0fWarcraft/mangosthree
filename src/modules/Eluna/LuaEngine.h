@@ -28,7 +28,7 @@ extern "C"
 #include "lua.h"
 };
 
-#ifdef TRINITY
+#if defined(TRINITY) || AZEROTHCORE
 struct ItemTemplate;
 typedef BattlegroundTypeId BattleGroundTypeId;
 #else
@@ -41,11 +41,14 @@ typedef SpellEntry SpellInfo;
 typedef int Difficulty;
 #endif
 #endif
-
+#ifndef AZEROTHCORE
 struct AreaTriggerEntry;
+#else
+typedef AreaTrigger AreaTriggerEntry;
+#endif
 class AuctionHouseObject;
 struct AuctionEntry;
-#ifdef TRINITY
+#if defined(TRINITY) || AZEROTHCORE
 class Battleground;
 typedef Battleground BattleGround;
 #endif
@@ -54,12 +57,12 @@ class Corpse;
 class Creature;
 class CreatureAI;
 class GameObject;
-#ifdef TRINITY
+#if defined(TRINITY) || AZEROTHCORE
 class GameObjectAI;
 #endif
 class Guild;
 class Group;
-#ifdef TRINITY
+#if defined(TRINITY) || AZEROTHCORE
 class InstanceScript;
 typedef InstanceScript InstanceData;
 #else
@@ -72,7 +75,7 @@ class Player;
 class Quest;
 class Spell;
 class SpellCastTargets;
-#ifdef TRINITY
+#if defined(TRINITY) || AZEROTHCORE
 class TempSummon;
 #else
 class TemporarySummon;
@@ -84,7 +87,7 @@ class Weather;
 class WorldPacket;
 #ifndef CLASSIC
 #ifndef TBC
-#ifdef TRINITY
+#if defined(TRINITY) || AZEROTHCORE
 class Vehicle;
 #else
 class VehicleInfo;
@@ -111,7 +114,6 @@ struct LuaScript
     std::string modulepath;
 };
 
-#define ELUNA_OBJECT_STORE  "Eluna Object Store"
 #define ELUNA_STATE_PTR     "Eluna State Ptr"
 #define LOCK_ELUNA Eluna::Guard __guard(Eluna::GetLock())
 
@@ -140,6 +142,14 @@ private:
     // lua path variable for require() function
     static std::string lua_requirepath;
 
+    // A counter for lua event stacks that occur (see event_level).
+    // This is used to determine whether an object belongs to the current call stack or not.
+    // 0 is reserved for always belonging to the call stack
+    // 1 is reserved for a non valid callstackid
+    uint64 callstackid = 2;
+    // A counter for the amount of nested events. When the event_level
+    // reaches 0 we are about to return back to C++. At this point the
+    // objects used during the event stack are invalidated.
     uint32 event_level;
     // When a hook pushes arguments to be passed to event handlers,
     //  this is used to keep track of how many arguments were pushed.
@@ -312,6 +322,7 @@ public:
     bool ShouldReload() const { return reload; }
     bool IsEnabled() const { return enabled && IsInitialized(); }
     bool HasLuaState() const { return L != NULL; }
+    uint64 GetCallstackId() const { return callstackid; }
     int Register(lua_State* L, uint8 reg, uint32 entry, uint64 guid, uint32 instanceId, uint32 event_id, int functionRef, uint32 shots);
 
     // Checks
@@ -348,7 +359,7 @@ public:
     bool OnAddonMessage(Player* sender, uint32 type, std::string& msg, Player* receiver, Guild* guild, Group* group, Channel* channel);
 
     /* Item */
-    bool OnDummyEffect(Unit* pCaster, uint32 spellId, SpellEffIndex effIndex, Item* pTarget);
+    void OnDummyEffect(WorldObject* pCaster, uint32 spellId, SpellEffIndex effIndex, Item* pTarget);
     bool OnQuestAccept(Player* pPlayer, Item* pItem, Quest const* pQuest);
     bool OnUse(Player* pPlayer, Item* pItem, SpellCastTargets const& targets);
     bool OnItemUse(Player* pPlayer, Item* pItem, SpellCastTargets const& targets);
@@ -358,13 +369,13 @@ public:
     void HandleGossipSelectOption(Player* pPlayer, Item* item, uint32 sender, uint32 action, const std::string& code);
 
     /* Creature */
-    bool OnDummyEffect(Unit* pCaster, uint32 spellId, SpellEffIndex effIndex, Creature* pTarget);
+    void OnDummyEffect(WorldObject* pCaster, uint32 spellId, SpellEffIndex effIndex, Creature* pTarget);
     bool OnGossipHello(Player* pPlayer, Creature* pCreature);
     bool OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 sender, uint32 action);
     bool OnGossipSelectCode(Player* pPlayer, Creature* pCreature, uint32 sender, uint32 action, const char* code);
     bool OnQuestAccept(Player* pPlayer, Creature* pCreature, Quest const* pQuest);
     bool OnQuestReward(Player* pPlayer, Creature* pCreature, Quest const* pQuest, uint32 opt);
-    uint32 GetDialogStatus(const Player* pPlayer, const Creature* pCreature);
+    void GetDialogStatus(const Player* pPlayer, const Creature* pCreature);
 
     bool OnSummoned(Creature* creature, Unit* summoner);
     bool UpdateAI(Creature* me, const uint32 diff);
@@ -382,26 +393,26 @@ public:
     bool ReceiveEmote(Creature* me, Player* player, uint32 emoteId);
     bool CorpseRemoved(Creature* me, uint32& respawnDelay);
     bool MoveInLineOfSight(Creature* me, Unit* who);
-    bool SpellHit(Creature* me, Unit* caster, SpellInfo const* spell);
-    bool SpellHitTarget(Creature* me, Unit* target, SpellInfo const* spell);
+    bool SpellHit(Creature* me, WorldObject* caster, SpellInfo const* spell);
+    bool SpellHitTarget(Creature* me, WorldObject* target, SpellInfo const* spell);
     bool SummonedCreatureDies(Creature* me, Creature* summon, Unit* killer);
     bool OwnerAttackedBy(Creature* me, Unit* attacker);
     bool OwnerAttacked(Creature* me, Unit* target);
     void On_Reset(Creature* me);
 
     /* GameObject */
-    bool OnDummyEffect(Unit* pCaster, uint32 spellId, SpellEffIndex effIndex, GameObject* pTarget);
+    void OnDummyEffect(WorldObject* pCaster, uint32 spellId, SpellEffIndex effIndex, GameObject* pTarget);
     bool OnGameObjectUse(Player* pPlayer, GameObject* pGameObject);
     bool OnGossipHello(Player* pPlayer, GameObject* pGameObject);
     bool OnGossipSelect(Player* pPlayer, GameObject* pGameObject, uint32 sender, uint32 action);
     bool OnGossipSelectCode(Player* pPlayer, GameObject* pGameObject, uint32 sender, uint32 action, const char* code);
     bool OnQuestAccept(Player* pPlayer, GameObject* pGameObject, Quest const* pQuest);
     bool OnQuestReward(Player* pPlayer, GameObject* pGameObject, Quest const* pQuest, uint32 opt);
-    uint32 GetDialogStatus(const Player* pPlayer, const GameObject* pGameObject);
+    void GetDialogStatus(const Player* pPlayer, const GameObject* pGameObject);
 #ifndef CLASSIC
 #ifndef TBC
-    void OnDestroyed(GameObject* pGameObject, Player* pPlayer);
-    void OnDamaged(GameObject* pGameObject, Player* pPlayer);
+    void OnDestroyed(GameObject* pGameObject, WorldObject* attacker);
+    void OnDamaged(GameObject* pGameObject, WorldObject* attacker);
 #endif
 #endif
     void OnLootStateChanged(GameObject* pGameObject, uint32 state);
@@ -518,7 +529,11 @@ public:
 
     /* World */
     void OnOpenStateChange(bool open);
+#ifndef AZEROTHCORE
     void OnConfigLoad(bool reload);
+#else
+    void OnConfigLoad(bool reload, bool isBefore);
+#endif
     void OnShutdownInitiate(ShutdownExitCode code, ShutdownMask mask);
     void OnShutdownCancel();
     void OnStartup();
@@ -528,7 +543,11 @@ public:
 
     /* Battle Ground */
     void OnBGStart(BattleGround* bg, BattleGroundTypeId bgId, uint32 instanceId);
+#if AZEROTHCORE
+    void OnBGEnd(BattleGround* bg, BattleGroundTypeId bgId, uint32 instanceId, TeamId winner);
+#else
     void OnBGEnd(BattleGround* bg, BattleGroundTypeId bgId, uint32 instanceId, Team winner);
+#endif
     void OnBGCreate(BattleGround* bg, BattleGroundTypeId bgId, uint32 instanceId);
     void OnBGDestroy(BattleGround* bg, BattleGroundTypeId bgId, uint32 instanceId);
 };
