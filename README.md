@@ -6,7 +6,7 @@ alt="GitHub last commit" border=0 valign="top"/>][61]
 [<img alt="Downloads on GitHub" src="https://img.shields.io/github/downloads/mangosthree/server/total.svg?style=flat-square" border=0 valign="top"/>][61]
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<B>Build Status:</b>
- Linux/MAC: [<img src='https://github.com/mangosthree/server/actions/workflows/core_build.yml/badge.svg' border=0 valign="middle">][10]
+ Linux/MAC: [<img src='https://github.com/mangosthree/server/actions/workflows/core_linux_build.yml/badge.svg' border=0 valign="middle">][10]
  Windows: [<img src='https://ci.appveyor.com/api/projects/status/github/mangosthree/server?branch=master&svg=true' border=0 valign="middle">][11]
  <br><b>Repository Status:</b>
 [<img src='https://api.codacy.com/project/badge/Grade/d54b4c8fec4746498fd05f84a4e7e5d4' border=0 valign="middle"/>][12]
