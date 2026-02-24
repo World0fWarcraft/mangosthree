@@ -592,7 +592,8 @@ float liquid_height[ADT_GRID_SIZE + 1][ADT_GRID_SIZE + 1];      /**< TODO */
  * @param build
  * @return bool
  */
-bool ConvertADT(char* filename, char* filename2, int cell_y, int cell_x, uint32 build)
+//bool ConvertADT(char* filename, char* filename2, int cell_y, int cell_x, uint32 build)
+bool ConvertADT(char* filename, char* filename2, uint32 build)
 {
     ADT_file adt;
 
@@ -1270,7 +1271,7 @@ void ExtractMapsFromMpq(uint32 build, const int locale)
                 }
                 sprintf(mpq_filename, "World\\Maps\\%s\\%s_%u_%u.adt", map_ids[z].name, map_ids[z].name, x, y);
                 sprintf(output_filename, "%s/maps/%04u%02u%02u.map", output_path, map_ids[z].id, y, x);
-                ConvertADT(mpq_filename, output_filename, y, x, build);
+                ConvertADT(mpq_filename, output_filename, build);
             }
             // draw progress bar
             printf(" Processing........................%d%%\r", (100 * (y + 1)) / WDT_MAP_SIZE);
