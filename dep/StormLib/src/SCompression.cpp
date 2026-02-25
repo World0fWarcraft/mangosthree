@@ -291,11 +291,11 @@ static int Decompress_PKLIB(void * pvOutBuffer, int * pcbOutBuffer, void * pvInB
         Info.pbInBuffEnd  = (unsigned char *)pvInBuffer + cbInBuffer;
         Info.pbOutBuff    = (unsigned char *)pvOutBuffer;
         Info.pbOutBuffEnd = (unsigned char *)pvOutBuffer + *pcbOutBuffer;
-        
+
         // Do the decompression
         if(explode(ReadInputData, WriteOutputData, work_buf, &Info) == CMP_NO_ERROR)
             nResult = 1;
-        
+
         // Give away the number of decompressed bytes
         *pcbOutBuffer = (int)(Info.pbOutBuff - (unsigned char *)pvOutBuffer);
               STORM_FREE(work_buf);

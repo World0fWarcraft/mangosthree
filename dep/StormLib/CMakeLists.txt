@@ -265,7 +265,7 @@ add_library(
       ${LIBRARY_NAME}
       STATIC
       ${SRC_FILES}
-      ${SRC_ADDITIONAL_FILES} 
+      ${SRC_ADDITIONAL_FILES}
       )
 
 set(LINK_LIBS ${LINK_LIBS} ZLIB::ZLIB BZip2::BZip2)
