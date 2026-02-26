@@ -61,7 +61,7 @@ jobs:
             -DBUILD_MANGOSD=1 \
             -DBUILD_REALMD=1 \
             -DSOAP=1 \
-            -DSCRIPT_LIB_ELUNA=1 \
+            -DSCRIPT_LIB_ELUNA=0 \
             -DSCRIPT_LIB_SD3_GATE=1 \
             -DPLAYERBOTS=0 \
             -DUSE_STORMLIB=1 \
