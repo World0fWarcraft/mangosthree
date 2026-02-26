@@ -77,26 +77,6 @@ bool ChatHandler::HandleHonorAddKillCommand(char* /*args*/)
     return true;
 }
 
-/**********************************************************************
-    CommandTable : resetCommandTable
-/***********************************************************************/
-
-bool ChatHandler::HandleResetHonorCommand(char* args)
-{
-    Player* target;
-    if (!ExtractPlayerTarget(&args, &target))
-    {
-        return false;
-    }
-
-    target->SetCurrencyCount(CURRENCY_HONOR_POINTS, 0);
-    target->SetUInt32Value(PLAYER_FIELD_KILLS, 0);
-    target->SetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS, 0);
-    target->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EARN_HONORABLE_KILL);
-
-    return true;
-}
-
 bool ChatHandler::HandleHonorKillsUpdateCommand(char* /*args*/)
 {
     Player* target = getSelectedPlayer();
@@ -114,6 +94,26 @@ bool ChatHandler::HandleHonorKillsUpdateCommand(char* /*args*/)
     }
 
     target->UpdateHonorKills();
+    return true;
+}
+
+/**********************************************************************
+    CommandTable : resetCommandTable
+ **********************************************************************/
+
+bool ChatHandler::HandleResetHonorCommand(char* args)
+{
+    Player* target;
+    if (!ExtractPlayerTarget(&args, &target))
+    {
+        return false;
+    }
+
+    target->SetCurrencyCount(CURRENCY_HONOR_POINTS, 0);
+    target->SetUInt32Value(PLAYER_FIELD_KILLS, 0);
+    target->SetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS, 0);
+    target->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EARN_HONORABLE_KILL);
+
     return true;
 }
 

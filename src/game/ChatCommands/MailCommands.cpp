@@ -23,10 +23,10 @@
  */
 
 #include "Chat.h"
+#include "ObjectMgr.h"
 #include "Language.h"
 #include "Mail.h"
 #include "MassMailMgr.h"
-#include "ObjectMgr.h"
 #include "Player.h"
 #include "WorldSession.h"
 

@@ -31,7 +31,7 @@
 
  /**********************************************************************
      CommandTable : banCommandTable
- /***********************************************************************/
+  **********************************************************************/
 
 
 bool ChatHandler::HandleBanListHelper(QueryResult* result)
@@ -228,7 +228,7 @@ bool ChatHandler::HandleBanAccountCommand(char* args)
 
  /**********************************************************************
      CommandTable : baninfoCommandTable
- /***********************************************************************/
+  **********************************************************************/
 
 bool ChatHandler::HandleBanInfoHelper(uint32 accountid, char const* accountname)
 {
@@ -338,7 +338,7 @@ bool ChatHandler::HandleBanInfoAccountCommand(char* args)
 
  /**********************************************************************
      CommandTable : banlistCommandTable
- /***********************************************************************/
+  **********************************************************************/
 
 bool ChatHandler::HandleBanListIPCommand(char* args)
 {
@@ -471,7 +471,7 @@ bool ChatHandler::HandleBanListAccountCommand(char* args)
 
 /**********************************************************************
     CommandTable : unbanCommandTable
-/***********************************************************************/
+ **********************************************************************/
 
 bool ChatHandler::HandleUnBanHelper(BanMode mode, char* args)
 {
@@ -543,7 +543,7 @@ bool ChatHandler::HandleUnBanIPCommand(char* args)
 
 /**********************************************************************
     CommandTable : commandTable
-/***********************************************************************/
+ **********************************************************************/
 
 // kick player
 bool ChatHandler::HandleKickPlayerCommand(char* args)

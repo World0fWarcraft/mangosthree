@@ -31,7 +31,7 @@
 
 /**********************************************************************
     CommandTable : castCommandTable
-/***********************************************************************/
+ **********************************************************************/
 
 bool AddAuraToPlayer(const SpellEntry* spellInfo, Unit* target, WorldObject* caster);
 
@@ -247,7 +247,7 @@ bool ChatHandler::HandleCastSelfCommand(char* args)
 
 /**********************************************************************
     CommandTable : Aura commands
-/***********************************************************************/
+ **********************************************************************/
 
 bool ChatHandler::HandleAuraCommand(char* args)
 {
@@ -335,7 +335,7 @@ bool ChatHandler::HandleUnAuraCommand(char* args)
 
 /**********************************************************************
     CommandTable : Main Command table
-/***********************************************************************/
+ **********************************************************************/
 
 bool ChatHandler::HandleAuraGroupCommand(char* args)
 {
