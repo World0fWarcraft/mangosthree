@@ -25,13 +25,13 @@
 #ifndef PLAYERTAXI_H
 #define PLAYERTAXI_H
 
-#include "Player.h"
-
 #include "Common.h"
 #include "DBCEnums.h"
 
 class ByteBuffer;
 struct FactionTemplateEntry;
+
+class Player; // forward declaration
 
 class PlayerTaxi
 {
