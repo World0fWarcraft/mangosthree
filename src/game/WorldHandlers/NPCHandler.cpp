@@ -800,9 +800,33 @@ void WorldSession::HandleBuyStableSlot(WorldPacket& recv_data)
     }
 }
 
-void WorldSession::HandleStableRevivePet(WorldPacket &/* recv_data */)
+void WorldSession::HandleStableRevivePet(WorldPacket& recv_data)
 {
-    DEBUG_LOG("HandleStableRevivePet: Not implemented");
+    DEBUG_LOG("HandleStableRevivePet: CMSG_STABLE_REVIVE_PET");
+
+    ObjectGuid npcGUID;
+    recv_data >> npcGUID;
+
+    if (!CheckStableMaster(npcGUID))
+    {
+        SendStableResult(STABLE_ERR_STABLE);
+        return;
+    }
+
+    // Revive all dead pets in the stable by setting their health to full
+    // The character_pet table stores pet health; setting it to non-zero revives it
+    CharacterDatabase.PExecute(
+        "UPDATE `character_pet` SET `curhealth` = `maxhealth` "
+        "WHERE `owner` = '%u' AND `curhealth` = 0 AND `slot` >= %u AND `slot` <= %u",
+        _player->GetGUIDLow(), PET_SAVE_FIRST_STABLE_SLOT, PET_SAVE_LAST_STABLE_SLOT);
+
+    // Also revive current pet if dead
+    CharacterDatabase.PExecute(
+        "UPDATE `character_pet` SET `curhealth` = `maxhealth` "
+        "WHERE `owner` = '%u' AND `curhealth` = 0 AND `slot` = %u",
+        _player->GetGUIDLow(), PET_SAVE_AS_CURRENT);
+
+    SendStableResult(STABLE_SUCCESS_UNSTABLE);
 }
 
 void WorldSession::HandleStableSwapPet(WorldPacket& recv_data)
