@@ -259,6 +259,11 @@ bool Transport::GenerateWaypoints(uint32 pathid, std::set<uint32>& mapids)
     int lastStop = -1;
     int firstStop = -1;
 
+    if (keyFrames.empty())
+    {
+        return false;
+    }
+
     // first cell is arrived at by teleportation :S
     keyFrames[0].distFromPrev = 0;
     if (keyFrames[0].node->actionFlag == 2)

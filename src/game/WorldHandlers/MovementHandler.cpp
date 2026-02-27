@@ -731,7 +731,7 @@ void WorldSession::HandleMoverRelocation(MovementInfo& movementInfo)
     }
     else                                                    // creature charmed
     {
-        if (mover->IsInWorld())
+        if (mover->IsInWorld() && mover->GetTypeId() == TYPEID_UNIT)
         {
             mover->GetMap()->CreatureRelocation((Creature*)mover, movementInfo.GetPos()->x, movementInfo.GetPos()->y, movementInfo.GetPos()->z, movementInfo.GetPos()->o);
         }
