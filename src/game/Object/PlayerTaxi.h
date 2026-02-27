@@ -27,6 +27,7 @@
 
 #include "Common.h"
 #include "DBCEnums.h"
+#include "SharedDefines.h"
 
 class ByteBuffer;
 struct FactionTemplateEntry;
