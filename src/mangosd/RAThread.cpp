@@ -148,11 +148,11 @@ class RASocket: protected ACE_Svc_Handler < ACE_SOCK_STREAM, ACE_NULL_SYNCH>
                 return -1;
             }
 
-            size_t readBytes = peer().recv(inputBuffer + inputBufferLen, RA_BUFF_SIZE - inputBufferLen - 1);
+            ssize_t readBytes = peer().recv(inputBuffer + inputBufferLen, RA_BUFF_SIZE - inputBufferLen - 1);
 
             if (readBytes <= 0)
             {
-                DEBUG_LOG("read %zu bytes in RASocket::handle_input", readBytes);
+                DEBUG_LOG("read %zd bytes in RASocket::handle_input", readBytes);
                 return -1;
             }
 
