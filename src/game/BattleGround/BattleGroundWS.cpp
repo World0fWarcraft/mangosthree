@@ -32,7 +32,7 @@
 #include "WorldPacket.h"
 #include "Language.h"
 
-BattleGroundWS::BattleGroundWS(): m_ReputationCapture(0), m_HonorWinKills(0), m_HonorEndKills(0), m_EndTimer(0), m_LastCapturedFlagTeam()
+BattleGroundWS::BattleGroundWS(): m_ReputationCapture(0), m_HonorWinKills(0), m_HonorEndKills(0), m_EndTimer(0), m_DoorTimer(0), m_DoorsOpen(false), m_LastCapturedFlagTeam()
 {
     m_StartMessageIds[BG_STARTING_EVENT_FIRST]  = 0;
     m_StartMessageIds[BG_STARTING_EVENT_SECOND] = LANG_BG_WS_START_ONE_MINUTE;
@@ -46,6 +46,17 @@ void BattleGroundWS::Update(uint32 diff)
 
     if (GetStatus() == STATUS_IN_PROGRESS)
     {
+        // Despawn doors after they have been open for a short while
+        if (m_DoorsOpen)
+        {
+            m_DoorTimer -= diff;
+            if (m_DoorTimer <= 0)
+            {
+                SpawnEvent(BG_EVENT_DOOR, 0, false);
+                m_DoorsOpen = false;
+            }
+        }
+
         if (m_FlagState[TEAM_INDEX_ALLIANCE] == BG_WS_FLAG_STATE_WAIT_RESPAWN)
         {
             m_FlagsTimer[TEAM_INDEX_ALLIANCE] -= diff;
@@ -121,7 +132,9 @@ void BattleGroundWS::StartingEventOpenDoors()
 {
     OpenDoorEvent(BG_EVENT_DOOR);
 
-    // TODO implement timer to despawn doors after a short while
+    // Despawn doors after a short while (20 seconds)
+    m_DoorTimer = 20 * IN_MILLISECONDS;
+    m_DoorsOpen = true;
 
     SpawnEvent(WS_EVENT_SPIRITGUIDES_SPAWN, 0, true);
     SpawnEvent(WS_EVENT_FLAG_A, 0, true);

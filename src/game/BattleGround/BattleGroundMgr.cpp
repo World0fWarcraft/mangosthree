@@ -111,6 +111,12 @@ void BattleGroundQueue::SelectionPool::Init()
 // sometimes it can be called on empty selection pool
 bool BattleGroundQueue::SelectionPool::KickGroup(uint32 size)
 {
+    // if pool is empty, do nothing
+    if (SelectedGroups.empty())
+    {
+        return true;
+    }
+
     // find maxgroup or LAST group with size == size and kick it
     bool found = false;
     GroupsQueueType::iterator groupToKick = SelectedGroups.begin();
@@ -126,7 +132,6 @@ bool BattleGroundQueue::SelectionPool::KickGroup(uint32 size)
             groupToKick = itr;
         }
     }
-    // if pool is empty, do nothing
     if (GetPlayerCount())
     {
         // update player count

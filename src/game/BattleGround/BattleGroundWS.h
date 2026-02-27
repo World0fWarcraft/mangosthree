@@ -331,6 +331,8 @@ class BattleGroundWS : public BattleGround
         uint32 m_HonorWinKills; /**< Honor for winning kills. */
         uint32 m_HonorEndKills; /**< Honor for end kills. */
         uint32 m_EndTimer;
+        int32  m_DoorTimer; /**< Timer for despawning doors after they open. */
+        bool   m_DoorsOpen; /**< Whether doors have been opened. */
         Team   m_LastCapturedFlagTeam;
 };
 #endif

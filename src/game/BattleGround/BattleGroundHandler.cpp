@@ -397,6 +397,12 @@ void WorldSession::HandleBattleFieldPortOpcode(WorldPacket& recv_data)
         return;
     }
 
+    if (queueSlot >= PLAYER_MAX_BATTLEGROUND_QUEUES)
+    {
+        sLog.outError("BattlegroundHandler: Invalid CMSG_BATTLEFIELD_PORT received from player (%u), queueSlot %u out of bounds.", _player->GetGUIDLow(), queueSlot);
+        return;
+    }
+
     BattleGroundQueueTypeId bgQueueTypeId = _player->GetBattleGroundQueueTypeId(queueSlot);
     if (bgQueueTypeId == BATTLEGROUND_QUEUE_NONE)
     {
