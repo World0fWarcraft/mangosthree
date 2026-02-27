@@ -2816,6 +2816,10 @@ class Player : public Unit
             m_lootGuid = guid;
         }
 
+        // Set whether the player opts out of group loot
+        void SetOptOutOfLoot(bool optOut) { m_isOptingOutOfLoot = optOut; }
+        bool IsOptingOutOfLoot() const { return m_isOptingOutOfLoot; }
+
         // Remove the insignia of the player
         void RemovedInsignia(Player* looterPlr);
 
@@ -3978,6 +3982,7 @@ class Player : public Unit
         void outDebugStatsValues() const;
 
         ObjectGuid m_lootGuid; // Loot GUID
+        bool m_isOptingOutOfLoot; // Player opted out of group loot
 
         Team m_team; // Player's team
         uint32 m_nextSave; // Next save time

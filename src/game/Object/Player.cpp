@@ -267,6 +267,7 @@ Player::Player(WorldSession* session): Unit(), m_mover(this), m_camera(this), m_
 
     m_speakTime = 0;
     m_speakCount = 0;
+    m_isOptingOutOfLoot = false;
 
     m_objectType |= TYPEMASK_PLAYER;
     m_objectTypeId = TYPEID_PLAYER;
@@ -8193,16 +8194,34 @@ void Player::DuelComplete(DuelCompleteType type)
         return;
     }
 
+    Player* opponent = duel->opponent;
+
+    // opponent may have been removed (disconnect during duel)
+    if (!opponent)
+    {
+        // Remove Duel Flag object
+        if (GameObject* obj = GetMap()->GetGameObject(GetGuidValue(PLAYER_DUEL_ARBITER)))
+        {
+            duel->initiator->RemoveGameObject(obj, true);
+        }
+
+        SetGuidValue(PLAYER_DUEL_ARBITER, ObjectGuid());
+        SetUInt32Value(PLAYER_DUEL_TEAM, 0);
+        delete duel;
+        duel = NULL;
+        return;
+    }
+
     WorldPacket data(SMSG_DUEL_COMPLETE, (1));
     data << (uint8)((type != DUEL_INTERRUPTED) ? 1 : 0);
     GetSession()->SendPacket(&data);
-    duel->opponent->GetSession()->SendPacket(&data);
+    opponent->GetSession()->SendPacket(&data);
 
     if (type != DUEL_INTERRUPTED)
     {
         data.Initialize(SMSG_DUEL_WINNER, (1 + 20));          // we guess size
         data << (uint8)((type == DUEL_WON) ? 0 : 1);          // 0 = just won; 1 = fled
-        data << duel->opponent->GetName();
+        data << opponent->GetName();
         data << GetName();
         SendMessageToSet(&data, true);
     }
@@ -8211,17 +8230,14 @@ void Player::DuelComplete(DuelCompleteType type)
 #ifdef ENABLE_ELUNA
     if (Eluna* e = GetEluna())
     {
-        e->OnDuelEnd(duel->opponent, this, type);
+        e->OnDuelEnd(opponent, this, type);
     }
 #endif /* ENABLE_ELUNA */
 
     if (type == DUEL_WON)
     {
         GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOSE_DUEL, 1);
-        if (duel->opponent)
-        {
-            duel->opponent->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_WIN_DUEL, 1);
-        }
+        opponent->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_WIN_DUEL, 1);
     }
 
     // Remove Duel Flag object
@@ -8233,7 +8249,7 @@ void Player::DuelComplete(DuelCompleteType type)
     /* remove auras */
     // TODO: Needs a simpler method
     std::vector<uint32> auras2remove;
-    SpellAuraHolderMap const& vAuras = duel->opponent->GetSpellAuraHolderMap();
+    SpellAuraHolderMap const& vAuras = opponent->GetSpellAuraHolderMap();
     for (SpellAuraHolderMap::const_iterator i = vAuras.begin(); i != vAuras.end(); ++i)
     {
         SpellAuraHolder const* aura = i->second;
@@ -8245,7 +8261,7 @@ void Player::DuelComplete(DuelCompleteType type)
 
     for (size_t i = 0; i < auras2remove.size(); ++i)
     {
-        duel->opponent->RemoveAurasDueToSpell(auras2remove[i]);
+        opponent->RemoveAurasDueToSpell(auras2remove[i]);
     }
 
     auras2remove.clear();
@@ -8253,7 +8269,7 @@ void Player::DuelComplete(DuelCompleteType type)
     for (SpellAuraHolderMap::const_iterator i = auras.begin(); i != auras.end(); ++i)
     {
         SpellAuraHolder const* aura = i->second;
-        if (!aura->IsPositive() && aura->GetCasterGuid() == duel->opponent->GetObjectGuid() && aura->GetAuraApplyTime() >= duel->startTime)
+        if (!aura->IsPositive() && aura->GetCasterGuid() == opponent->GetObjectGuid() && aura->GetAuraApplyTime() >= duel->startTime)
         {
             auras2remove.push_back(aura->GetId());
         }
@@ -8264,32 +8280,32 @@ void Player::DuelComplete(DuelCompleteType type)
     }
 
     // cleanup combo points
-    if (GetComboTargetGuid() == duel->opponent->GetObjectGuid())
+    if (GetComboTargetGuid() == opponent->GetObjectGuid())
     {
         ClearComboPoints();
     }
-    else if (GetComboTargetGuid() == duel->opponent->GetPetGuid())
+    else if (GetComboTargetGuid() == opponent->GetPetGuid())
     {
         ClearComboPoints();
     }
 
-    if (duel->opponent->GetComboTargetGuid() == GetObjectGuid())
+    if (opponent->GetComboTargetGuid() == GetObjectGuid())
     {
-        duel->opponent->ClearComboPoints();
+        opponent->ClearComboPoints();
     }
-    else if (duel->opponent->GetComboTargetGuid() == GetPetGuid())
+    else if (opponent->GetComboTargetGuid() == GetPetGuid())
     {
-        duel->opponent->ClearComboPoints();
+        opponent->ClearComboPoints();
     }
 
     // cleanups
     SetGuidValue(PLAYER_DUEL_ARBITER, ObjectGuid());
     SetUInt32Value(PLAYER_DUEL_TEAM, 0);
-    duel->opponent->SetGuidValue(PLAYER_DUEL_ARBITER, ObjectGuid());
-    duel->opponent->SetUInt32Value(PLAYER_DUEL_TEAM, 0);
+    opponent->SetGuidValue(PLAYER_DUEL_ARBITER, ObjectGuid());
+    opponent->SetUInt32Value(PLAYER_DUEL_TEAM, 0);
 
-    delete duel->opponent->duel;
-    duel->opponent->duel = NULL;
+    delete opponent->duel;
+    opponent->duel = NULL;
     delete duel;
     duel = NULL;
 }
@@ -14040,13 +14056,17 @@ void Player::TradeCancel(bool sendback)
             GetSession()->SendCancelTrade();
         }
 
-        trader->GetSession()->SendCancelTrade();
+        if (trader)
+        {
+            trader->GetSession()->SendCancelTrade();
 
-        // cleanup
+            // cleanup trader's trade data
+            delete trader->m_trade;
+            trader->m_trade = NULL;
+        }
+
         delete m_trade;
         m_trade = NULL;
-        delete trader->m_trade;
-        trader->m_trade = NULL;
     }
 }
 

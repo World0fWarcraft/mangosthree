@@ -312,18 +312,31 @@ void WorldSession::HandleLootMoneyOpcode(WorldPacket & /*recv_data*/)
                 }
             }
 
-            uint64 money_per_player = uint32((pLoot->gold) / (playersNear.size()));
-
-            for (std::vector<Player*>::const_iterator i = playersNear.begin(); i != playersNear.end(); ++i)
+            if (playersNear.empty())
             {
-                (*i)->ModifyMoney(money_per_player);
-                (*i)->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_MONEY, money_per_player);
+                player->ModifyMoney(pLoot->gold);
+                player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_MONEY, pLoot->gold);
 
                 WorldPacket data(SMSG_LOOT_MONEY_NOTIFY, 4 + 1);
-                data << uint32(money_per_player);
-                // Controls the text displayed in chat. 0 is "Your share is..." and 1 is "You loot..."
-                data << uint8(playersNear.size() <= 1);
-                (*i)->SendDirectMessage(&data);
+                data << uint32(pLoot->gold);
+                data << uint8(1);
+                SendPacket(&data);
+            }
+            else
+            {
+                uint64 money_per_player = uint32((pLoot->gold) / (playersNear.size()));
+
+                for (std::vector<Player*>::const_iterator i = playersNear.begin(); i != playersNear.end(); ++i)
+                {
+                    (*i)->ModifyMoney(money_per_player);
+                    (*i)->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_MONEY, money_per_player);
+
+                    WorldPacket data(SMSG_LOOT_MONEY_NOTIFY, 4 + 1);
+                    data << uint32(money_per_player);
+                    // Controls the text displayed in chat. 0 is "Your share is..." and 1 is "You loot..."
+                    data << uint8(playersNear.size() <= 1);
+                    (*i)->SendDirectMessage(&data);
+                }
             }
         }
         else
@@ -429,13 +442,10 @@ void WorldSession::DoLootRelease(ObjectGuid lguid)
         }
         else if (loot->isLooted() || go->GetGoType() == GAMEOBJECT_TYPE_FISHINGNODE)
         {
-            if (go->GetUseCount() >= go->GetGoType() == GAMEOBJECT_TYPE_FISHINGHOLE)
+            if (go->GetGoType() == GAMEOBJECT_TYPE_FISHINGHOLE)
             {
                 go->AddUse();
-                /* Checking if the maxSuccessOpens is set, if it is then it sets the loot state to
-                 * GO_JUST_DEACTIVATED, otherwise it sets it to GO_READY.
-                 */
-                if (go->GetGOInfo()->fishinghole.maxSuccessOpens)
+                if (go->GetUseCount() >= go->GetGOInfo()->fishinghole.maxSuccessOpens)
                 {
                     go->SetLootState(GO_JUST_DEACTIVATED);
                 }
@@ -504,7 +514,7 @@ void WorldSession::DoLootRelease(ObjectGuid lguid)
         else
         {
             /* Checking if the item is looted or not. If it is looted, it will destroy the item. */
-            if (pItem->loot.isLooted() || !pItem->loot.loot_type == ITEM_FLAG_LOOTABLE)
+            if (pItem->loot.isLooted() || pItem->loot.loot_type != ITEM_FLAG_LOOTABLE)
             {
                 /* Destroying the item in the player's inventory. */
                 player->DestroyItem(pItem->GetBagSlot(), pItem->GetSlot(), true);

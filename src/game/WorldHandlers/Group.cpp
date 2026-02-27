@@ -965,6 +965,11 @@ void Group::StartLootRoll(WorldObject* lootTarget, LootMethod method, Loot* loot
             continue;
         }
 
+        if (playerToRoll->IsOptingOutOfLoot())
+        {
+            continue;
+        }
+
         if (lootItem.AllowedForPlayer(playerToRoll, lootTarget))
         {
             if (playerToRoll->IsWithinDistInMap(lootTarget, sWorld.getConfig(CONFIG_FLOAT_GROUP_XP_DISTANCE), false))

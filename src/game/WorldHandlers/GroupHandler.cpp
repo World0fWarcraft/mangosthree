@@ -1267,14 +1267,14 @@ void WorldSession::HandleOptOutOfLootOpcode(WorldPacket& recv_data)
     if (!GetPlayer())                                       // needed because STATUS_AUTHED
     {
         if (unkn != 0)
+        {
             sLog.outError("CMSG_GROUP_PASS_ON_LOOT value<>0 for not-loaded character!");
+        }
         return;
     }
 
-    if (unkn != 0)
-    {
-        sLog.outError("CMSG_GROUP_PASS_ON_LOOT: activation not implemented!");
-    }
+    // Set player's opt-out-of-loot preference
+    GetPlayer()->SetOptOutOfLoot(unkn != 0);
 }
 
 void WorldSession::HandleSetAllowLowLevelRaidOpcode(WorldPacket& recv_data)
