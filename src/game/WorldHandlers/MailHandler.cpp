@@ -550,6 +550,11 @@ void WorldSession::HandleMailTakeItem(WorldPacket& recv_data)
     }
 
     Item* it = pl->GetMItem(itemId);
+    if (!it)
+    {
+        pl->SendMailResult(mailId, MAIL_ITEM_TAKEN, MAIL_ERR_INTERNAL_ERROR);
+        return;
+    }
 
     ItemPosCountVec dest;
     InventoryResult msg = _player->CanStoreItem(NULL_BAG, NULL_SLOT, dest, it, false);
@@ -831,6 +836,7 @@ void WorldSession::HandleMailCreateTextItem(WorldPacket& recv_data)
         if (!mailTemplateEntry)
         {
             pl->SendMailResult(mailId, MAIL_MADE_PERMANENT, MAIL_ERR_INTERNAL_ERROR);
+            delete bodyItem;
             return;
         }
 
