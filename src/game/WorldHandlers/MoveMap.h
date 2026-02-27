@@ -31,8 +31,9 @@
 #include "../../dep/recastnavigation/Detour/Include/DetourNavMesh.h"
 #include "../../dep/recastnavigation/Detour/Include/DetourNavMeshQuery.h"
 
-class Unit;
+#include "Utilities/UnorderedMapSet.h"
 
+class Unit;
 //  memory management
 inline void* dtCustomAlloc(size_t size, dtAllocHint /*hint*/)
 {
