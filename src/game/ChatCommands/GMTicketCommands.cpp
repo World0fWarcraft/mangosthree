@@ -571,13 +571,7 @@ bool ChatHandler::HandleTickerSurveyClose(char* args)
     }
     else
     {
-
-        ObjectGuid guid = ticket->GetPlayerGuid();
-
-        sTicketMgr.Delete(guid);
-
-        // notify player
-        if (Player* pl = sObjectMgr.GetPlayer(guid))
+        if (!ExtractPlayerTarget(&args, NULL, &target_guid, &target_name))
         {
             return false;
         }
@@ -593,6 +587,7 @@ bool ChatHandler::HandleTickerSurveyClose(char* args)
         }
     }
 
+    target_guid = ticket->GetPlayerGuid();
     sObjectMgr.GetPlayerNameByGUID(target_guid, target_name);
     uint32 ticketId = ticket->GetId();
     ticket->CloseWithSurvey();

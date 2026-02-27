@@ -192,11 +192,18 @@ void WorldSession::HandleGMTicketSurveySubmitOpcode(WorldPacket& recv_data)
     // This will be sent after SMSG_GM_TICKET_STATUS_UPDATE with the status = 3
     GMTicket* ticket = sTicketMgr.GetGMTicket(GetPlayer()->GetObjectGuid());
     if (!ticket)
-        //Should we send GM_TICKET_STATUS_CLOSE here aswell?
+    {
+        SendGMTicketStatusUpdate(GM_TICKET_STATUS_CLOSE);
         return;
+    }
 
     ticket->SaveSurveyData(recv_data);
-    //Here something needs to be done to inform the client that the ticket is closed
+
+    // Delete the ticket now that the survey is done
+    sTicketMgr.Delete(GetPlayer()->GetObjectGuid());
+
+    // Inform the client the ticket is closed
+    SendGMTicketStatusUpdate(GM_TICKET_STATUS_CLOSE);
 }
 
 void WorldSession::HandleGMResponseResolveOpcode(WorldPacket& recv_data)

@@ -36,9 +36,9 @@ INSTANTIATE_SINGLETON_1(GMTicketMgr);
 
 void GMTicket::SaveSurveyData(WorldPacket& recvData) const
 {
-    uint32 x;
-    recvData >> x;                                         // answer range? (6 = 0-5?)
-    DEBUG_LOG("SURVEY: X = %u", x);
+    uint32 surveyId;
+    recvData >> surveyId;                                  // GMSurveyCurrentSurvey.dbc
+    DEBUG_LOG("SURVEY: surveyId = %u", surveyId);
 
     uint8 result[10];
     memset(result, 0, sizeof(result));
@@ -54,17 +54,27 @@ void GMTicket::SaveSurveyData(WorldPacket& recvData) const
         uint8 value;
         std::string unk_text;
         recvData >> value;                                 // answer
-        recvData >> unk_text;                              // always empty?
+        recvData >> unk_text;                              // comment per question
 
         result[i] = value;
         DEBUG_LOG("SURVEY: ID %u, value %u, text %s", questionID, value, unk_text.c_str());
     }
 
     std::string comment;
-    recvData >> comment;                                   // addional comment
+    recvData >> comment;                                   // additional comment
     DEBUG_LOG("SURVEY: comment %s", comment.c_str());
 
-    // TODO: chart this data in some way in DB
+    // Save survey data to database
+    std::string escapedComment = comment;
+    CharacterDatabase.escape_string(escapedComment);
+    CharacterDatabase.PExecute("INSERT INTO `gm_surveys` (`guid`, `surveyid`, `main_survey`, "
+                               "`answer1`, `answer2`, `answer3`, `answer4`, `answer5`, "
+                               "`answer6`, `answer7`, `answer8`, `answer9`, `answer10`, `comment`) "
+                               "VALUES (%u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u, '%s')",
+                               m_guid.GetCounter(), m_ticketId, surveyId,
+                               result[0], result[1], result[2], result[3], result[4],
+                               result[5], result[6], result[7], result[8], result[9],
+                               escapedComment.c_str());
 }
 
 void GMTicket::Init(ObjectGuid guid, const std::string& text, const std::string& responseText, time_t update, uint32 ticketId)
