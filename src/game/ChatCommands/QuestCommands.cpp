@@ -23,8 +23,8 @@
  */
 
 #include "Chat.h"
-#include "Language.h"
 #include "ObjectMgr.h"
+#include "Language.h"
 #include "World.h"
 #include "SQLStorages.h"
 

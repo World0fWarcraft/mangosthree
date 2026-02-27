@@ -31,6 +31,7 @@
 #include "../../dep/recastnavigation/Detour/Include/DetourNavMesh.h"
 #include "../../dep/recastnavigation/Detour/Include/DetourNavMeshQuery.h"
 
+#include <unordered_map>
 #include "Utilities/UnorderedMapSet.h"
 
 class Unit;

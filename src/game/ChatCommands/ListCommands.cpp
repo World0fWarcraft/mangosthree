@@ -38,7 +38,7 @@ static uint32 ReputationRankStrIndex[MAX_REPUTATION_RANK] =
 
  /**********************************************************************
       CommandTable : listCommandTable
- /***********************************************************************/
+  **********************************************************************/
 
 bool ChatHandler::HandleListAurasCommand(char* /*args*/)
 {

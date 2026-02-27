@@ -24,8 +24,8 @@
 
 #include "DBCStores.h"
 #include "Chat.h"
-#include "Language.h"
 #include "ObjectMgr.h"
+#include "Language.h"
 #include "Player.h"
 #include "World.h"
 #include "WorldSession.h"
