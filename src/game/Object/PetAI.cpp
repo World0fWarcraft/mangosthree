@@ -119,7 +119,13 @@ bool PetAI::_needToStop() const
         return true;
     }
 
-    return !m_creature->getVictim()->IsTargetableForAttack();
+    Unit* victim = m_creature->getVictim();
+    if (!victim)
+    {
+        return true;
+    }
+
+    return !victim->IsTargetableForAttack();
 }
 
 void PetAI::_stopAttack()
@@ -178,6 +184,11 @@ void PetAI::UpdateAI(const uint32 diff)
 
     if (((Pet*)m_creature)->GetIsRetreating())
     {
+        if (!owner)
+        {
+            return;
+        }
+
         if (!owner->IsWithinDistInMap(m_creature, (PET_FOLLOW_DIST * 2)))
         {
             if (!m_creature->hasUnitState(UNIT_STAT_FOLLOW))
@@ -213,7 +224,7 @@ void PetAI::UpdateAI(const uint32 diff)
                 m_creature->SendCreateUpdateToPlayer((Player*)victim);
             }
 
-            if (owner->GetTypeId() == TYPEID_PLAYER)
+            if (owner && owner->GetTypeId() == TYPEID_PLAYER)
             {
                 m_creature->SendCreateUpdateToPlayer((Player*)owner);
             }

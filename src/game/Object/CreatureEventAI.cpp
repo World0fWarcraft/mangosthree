@@ -1874,7 +1874,7 @@ void CreatureEventAI::DamageTaken(Unit* dealer, uint32& damage)
     {
         // Throw at 90%, 50% and 10% health
         float healthSteps[HEALTH_STEPS] = { 90.0f, 50.0f, 10.0f };
-        float newHealthPercent = (m_creature->GetHealth() - damage) * 100.0f / m_creature->GetMaxHealth();
+        float newHealthPercent = m_creature->GetMaxHealth() ? (m_creature->GetHealth() - damage) * 100.0f / m_creature->GetMaxHealth() : 0.0f;
         AIEventType sendEvent[HEALTH_STEPS] = { AI_EVENT_LOST_SOME_HEALTH, AI_EVENT_LOST_HEALTH, AI_EVENT_CRITICAL_HEALTH };
 
         if (newHealthPercent > healthSteps[step])

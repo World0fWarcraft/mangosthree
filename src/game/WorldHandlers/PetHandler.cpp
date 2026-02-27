@@ -163,16 +163,18 @@ void WorldSession::HandlePetAction(WorldPacket& recv_data)
                 {
                     Creature* petC = (Creature*)pet;
                     if (petC->IsPet())
-
                     {
                         Pet* p = (Pet*)petC;
                         if (p->getPetType() == HUNTER_PET)
                         {
                             p->Unsummon(PET_SAVE_AS_DELETED, _player);
+                            return;
                         }
                         else
+                        {
                             // dismissing a summoned pet is like killing them (this prevents returning a soulshard...)
                             p->SetDeathState(CORPSE);
+                        }
                     }
                     else                                    // charmed
                     {
@@ -200,6 +202,7 @@ void WorldSession::HandlePetAction(WorldPacket& recv_data)
                     pet->AttackStop(true);
                     ((Pet*)pet)->SetSpellOpener();
                 }
+                // fall through
                 case REACT_DEFENSIVE:                       // recovery
                 case REACT_AGGRESSIVE:                      // activete
                 {
