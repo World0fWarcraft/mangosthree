@@ -82,6 +82,11 @@ void WorldSession::HandleGuildCreateOpcode(WorldPacket& recvPacket)
 void WorldSession::SendGuildInvite(Player* player, bool alreadyInGuild /*= false*/)
 {
     Guild* guild = sGuildMgr.GetGuildById(GetPlayer()->GetGuildId());
+    if (!guild)
+    {
+        return;
+    }
+
     player->SetGuildIdInvited(GetPlayer()->GetGuildId());
 
     WorldPacket data(SMSG_GUILD_INVITE, (8 + 10));          // guess size
