@@ -788,6 +788,11 @@ dtStatus PathFinder::findSmoothPath(const float* startPos, const float* endPos,
     *smoothPathSize = 0;
     uint32 nsmoothPath = 0;
 
+    if (polyPathSize == 0 || polyPathSize > MAX_PATH_LENGTH)
+    {
+        return DT_FAILURE;
+    }
+
     dtPolyRef polys[MAX_PATH_LENGTH];
     memcpy(polys, polyPath, sizeof(dtPolyRef)*polyPathSize);
     uint32 npolys = polyPathSize;
