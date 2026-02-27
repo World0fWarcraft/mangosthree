@@ -216,7 +216,7 @@ void WorldSession::HandleChannelMuteOpcode(WorldPacket& recvPacket)
     if (ChannelMgr* cMgr = channelMgr(_player->GetTeam()))
         if (Channel* chn = cMgr->GetChannel(channelname, _player))
         {
-            chn->Invite(_player, otp.c_str());
+            chn->SetMute(_player, otp.c_str());
         }
 }
 
