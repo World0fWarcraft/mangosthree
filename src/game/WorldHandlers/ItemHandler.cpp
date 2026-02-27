@@ -1437,7 +1437,41 @@ void WorldSession::HandleItemRefundInfoRequest(WorldPacket& recv_data)
         return;
     }
 
-    // item refund system not implemented yet
+    ItemPrototype const* proto = item->GetProto();
+
+    // Calculate remaining refund time (2 hours from purchase)
+    uint32 createPlayedTime = item->GetUInt32Value(ITEM_FIELD_CREATE_PLAYED_TIME);
+    uint32 curPlayedTime = _player->GetTotalPlayedTime();
+    uint32 maxRefundTime = 2 * HOUR;
+    uint32 remainingTime = 0;
+    if (curPlayedTime - createPlayedTime < maxRefundTime)
+    {
+        remainingTime = maxRefundTime - (curPlayedTime - createPlayedTime);
+    }
+
+    // Send SMSG_SET_ITEM_PURCHASE_DATA
+    // 5 currency slots + 5 item slots in extended cost structure
+    WorldPacket data(SMSG_SET_ITEM_PURCHASE_DATA, 8 + 4 + 4 * 5 * 2 + 4 * 5 * 2 + 4);
+    data << itemGuid;
+    data << uint32(remainingTime);
+
+    // Currency/token costs (from extended cost, 5 slots)
+    for (uint32 i = 0; i < 5; ++i)
+    {
+        data << uint32(0);                                  // currency id
+        data << uint32(0);                                  // currency count
+    }
+
+    // Item costs (from extended cost, 5 slots)
+    for (uint32 i = 0; i < 5; ++i)
+    {
+        data << uint32(0);                                  // item id
+        data << uint32(0);                                  // item count
+    }
+
+    data << uint32(proto->BuyPrice);                        // money cost
+
+    SendPacket(&data);
 }
 
 /*
