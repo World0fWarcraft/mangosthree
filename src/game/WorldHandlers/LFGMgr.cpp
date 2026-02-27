@@ -1090,6 +1090,11 @@ bool LFGMgr::MatchesAreOfSameTeam(LFGPlayers* groupOne, LFGPlayers* groupTwo)
     Player* pPlayer1 = sObjectAccessor.FindPlayer(it1->first);
     Player* pPlayer2 = sObjectAccessor.FindPlayer(it2->first);
 
+    if (!pPlayer1 || !pPlayer2)
+    {
+        return false;
+    }
+
     // todo: disable this if a config option is set
     if (pPlayer1->GetTeamId() == pPlayer2->GetTeamId())
     {
@@ -1214,7 +1219,7 @@ uint32 LFGMgr::GetDungeonEntry(uint32 ID)
 void LFGMgr::PerformRoleCheck(Player* pPlayer, Group* pGroup, uint8 roles)
 {
     ObjectGuid groupGuid = pGroup->GetObjectGuid();
-    ObjectGuid plrGuid = pPlayer->GetObjectGuid();
+    ObjectGuid plrGuid = pPlayer ? pPlayer->GetObjectGuid() : ObjectGuid();
 
     roleCheckMap::iterator it = m_roleCheckMap.find(groupGuid);
     if (it == m_roleCheckMap.end())
@@ -1237,16 +1242,17 @@ void LFGMgr::PerformRoleCheck(Player* pPlayer, Group* pGroup, uint8 roles)
     {
         roleCheck.currentRoles[plrGuid] = roles;
 
-        roleMap::iterator rItr = roleCheck.currentRoles.begin();
-        do
+        bool allRolesChosen = true;
+        for (roleMap::iterator rItr = roleCheck.currentRoles.begin(); rItr != roleCheck.currentRoles.end(); ++rItr)
         {
-            if (rItr->second != PLAYER_ROLE_NONE)
+            if (rItr->second == PLAYER_ROLE_NONE)
             {
-                ++rItr;
+                allRolesChosen = false;
+                break;
             }
-        } while (rItr != roleCheck.currentRoles.end());
+        }
 
-        if (rItr == roleCheck.currentRoles.end()) // meaning that everyone confirmed their roles
+        if (allRolesChosen) // meaning that everyone confirmed their roles
         {
             roleCheck.state = ValidateGroupRoles(roleCheck.currentRoles) ? LFG_ROLECHECK_FINISHED : LFG_ROLECHECK_MISSING_ROLE;
         }
@@ -1383,6 +1389,10 @@ void LFGMgr::SendDungeonProposal(LFGPlayers* lfgGroup)
         SetPlayerState(plrGuid, LFG_STATE_PROPOSAL);
 
         Player* pPlayer = sObjectAccessor.FindPlayer(plrGuid);
+        if (!pPlayer)
+        {
+            continue;
+        }
 
         if (Group* pGroup = pPlayer->GetGroup())
         {
@@ -1524,7 +1534,10 @@ void LFGMgr::ProposalUpdate(uint32 proposalID, ObjectGuid plrGuid, bool accepted
         {
             ObjectGuid proposalPlrGuid  = itr->first;
             Player* pProposalPlayer = sObjectAccessor.FindPlayer(proposalPlrGuid);
-            pProposalPlayer->GetSession()->SendLfgProposalUpdate(*proposal);
+            if (pProposalPlayer)
+            {
+                pProposalPlayer->GetSession()->SendLfgProposalUpdate(*proposal);
+            }
         }
 
         return;
@@ -1545,6 +1558,10 @@ void LFGMgr::ProposalUpdate(uint32 proposalID, ObjectGuid plrGuid, bool accepted
 
         ObjectGuid proposalPlrGuid  = rItr->first;
         Player* pProposalPlayer = sObjectAccessor.FindPlayer(proposalPlrGuid);
+        if (!pProposalPlayer)
+        {
+            continue;
+        }
 
         if (sendProposalUpdate)
         {
@@ -1552,7 +1569,7 @@ void LFGMgr::ProposalUpdate(uint32 proposalID, ObjectGuid plrGuid, bool accepted
         }
 
         // amount of time spent in queue
-        int32 timeWaited = (joinedTime - proposal->joinedQueue) / IN_MILLISECONDS;
+        int32 timeWaited = joinedTime - proposal->joinedQueue;
 
         // tell the lfg system to update the average wait times on the next tick
         UpdateWaitMap(LFGRoles(proposalPlrRole), proposal->dungeonID, timeWaited);
@@ -1896,6 +1913,10 @@ void LFGMgr::ProposalDeclined(ObjectGuid guid, LFGProposal* proposal)
         SetPlayerUpdateType(groupPlrGuid, LFG_UPDATE_PROPOSAL_DECLINED);
 
         Player* pGroupPlayer = sObjectAccessor.FindPlayer(groupPlrGuid);
+        if (!pGroupPlayer)
+        {
+            continue;
+        }
         Group* pGroup = pGroupPlayer->GetGroup();
 
         // if player was in a premade group and declined, remove the group.

@@ -435,7 +435,7 @@ void WorldSession::SendLfgRoleCheckUpdate(LFGRoleCheck const& roleCheck)
         data << uint64(leaderGuid.GetRawValue());
         data << uint8(leaderRoles > 0);
         data << uint32(leaderRoles);
-        data << uint8(pLeader->getLevel());
+        data << uint8(pLeader ? pLeader->getLevel() : 0);
 
         for (roleMap::const_iterator rItr = roleCheck.currentRoles.begin(); rItr != roleCheck.currentRoles.end(); ++rItr)
         {
@@ -451,7 +451,7 @@ void WorldSession::SendLfgRoleCheckUpdate(LFGRoleCheck const& roleCheck)
             data << uint64(plrGuid.GetRawValue());
             data << uint8(rItr->second > 0);
             data << uint32(rItr->second);
-            data << uint8(pPlayer->getLevel());
+            data << uint8(pPlayer ? pPlayer->getLevel() : 0);
         }
     }
 
