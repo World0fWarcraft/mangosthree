@@ -97,7 +97,17 @@ void WorldSession::HandleBusyTradeOpcode(WorldPacket& /*recvPacket*/)
 
 void WorldSession::SendUpdateTrade(bool trader_state /*= true*/)
 {
-    TradeData* view_trade = trader_state ? _player->GetTradeData()->GetTraderData() : _player->GetTradeData();
+    TradeData* my_trade = _player->GetTradeData();
+    if (!my_trade)
+    {
+        return;
+    }
+
+    TradeData* view_trade = trader_state ? my_trade->GetTraderData() : my_trade;
+    if (!view_trade)
+    {
+        return;
+    }
 
     WorldPacket data(SMSG_TRADE_STATUS_EXTENDED, (100));    // guess size
     data << uint32(0);                                      // added in 2.4.0, this value must be equal to value from TRADE_STATUS_OPEN_WINDOW status packet (different value for different players to block multiple trades?)
@@ -331,6 +341,10 @@ void WorldSession::HandleAcceptTradeOpcode(WorldPacket& recvPacket)
     }
 
     Player* trader = my_trade->GetTrader();
+    if (!trader)
+    {
+        return;
+    }
 
     TradeData* his_trade = trader->m_trade;
     if (!his_trade)
@@ -597,7 +611,13 @@ void WorldSession::HandleBeginTradeOpcode(WorldPacket& /*recvPacket*/)
         return;
     }
 
-    my_trade->GetTrader()->GetSession()->SendTradeStatus(TRADE_STATUS_OPEN_WINDOW);
+    Player* trader = my_trade->GetTrader();
+    if (!trader || !trader->GetSession())
+    {
+        return;
+    }
+
+    trader->GetSession()->SendTradeStatus(TRADE_STATUS_OPEN_WINDOW);
     SendTradeStatus(TRADE_STATUS_OPEN_WINDOW);
 }
 
