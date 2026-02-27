@@ -1763,7 +1763,7 @@ class Unit : public WorldObject
          * \see GetHealth
          * \see GetMaxHealth
          */
-        float GetHealthPercent() const { return (GetHealth() * 100.0f) / GetMaxHealth(); }
+        float GetHealthPercent() const { return GetMaxHealth() ? (GetHealth() * 100.0f) / GetMaxHealth() : 0.0f; }
         uint32 CountPctFromMaxHealth(int32 pct) const { return (GetMaxHealth() * static_cast<float>(pct) / 100.0f); }
         uint32 CountPctFromCurHealth(int32 pct) const { return (GetHealth() * static_cast<float>(pct) / 100.0f); }
         /**

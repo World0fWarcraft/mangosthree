@@ -3680,7 +3680,7 @@ SpellAuraProcResult Unit::HandleProcTriggerSpellAuraProc(Unit* pVictim, uint32 d
                 }
 
                 // If target's health is not below equal certain value (35%) not proc
-                if (int32(pVictim->GetHealth() * 100 / pVictim->GetMaxHealth()) > aur->GetModifier()->m_amount)
+                if (!pVictim->GetMaxHealth() || int32(pVictim->GetHealth() * 100 / pVictim->GetMaxHealth()) > aur->GetModifier()->m_amount)
                 {
                     return SPELL_AURA_PROC_FAILED;
                 }
@@ -3698,7 +3698,7 @@ SpellAuraProcResult Unit::HandleProcTriggerSpellAuraProc(Unit* pVictim, uint32 d
                     return SPELL_AURA_PROC_FAILED;
                 }
                 // If your Greater Heal brings the target to full health, you gain $37595s1 mana.
-                if (pVictim->GetHealth() + damage < pVictim->GetMaxHealth())
+                if (pVictim->GetMaxHealth() - pVictim->GetHealth() > damage)
                 {
                     return SPELL_AURA_PROC_FAILED;
                 }

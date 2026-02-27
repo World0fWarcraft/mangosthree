@@ -781,7 +781,8 @@ void Spell::EffectSchoolDMG(SpellEffectEntry const* effect)
                 else if (classOptions && classOptions->SpellFamilyFlags & UI64LIT(0x100000000))
                 {
                     int32 base = irand((int32)m_caster->GetWeaponDamageRange(RANGED_ATTACK, MINDAMAGE), (int32)m_caster->GetWeaponDamageRange(RANGED_ATTACK, MAXDAMAGE));
-                    damage += int32(float(base) / m_caster->GetAttackTime(RANGED_ATTACK) * 2800 + m_caster->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.1f);
+                    uint32 attTime = m_caster->GetAttackTime(RANGED_ATTACK);
+                    damage += attTime ? int32(float(base) / attTime * 2800 + m_caster->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.1f) : 0;
                 }
                 break;
             }
@@ -861,7 +862,8 @@ void Spell::EffectSchoolDMG(SpellEffectEntry const* effect)
                     // Add main hand dps * effect[2] amount
                     float average = (m_caster->GetFloatValue(UNIT_FIELD_MINDAMAGE) + m_caster->GetFloatValue(UNIT_FIELD_MAXDAMAGE)) / 2;
                     int32 count = m_caster->CalculateSpellDamage(unitTarget, m_spellInfo, EFFECT_INDEX_2);
-                    damage += count * int32(average * IN_MILLISECONDS) / m_caster->GetAttackTime(BASE_ATTACK);
+                    uint32 attTime = m_caster->GetAttackTime(BASE_ATTACK);
+                    damage += attTime ? count * int32(average * IN_MILLISECONDS) / attTime : 0;
                 }
                 // Judgement
                 else if (m_spellInfo->Id == 20271)
@@ -1836,8 +1838,8 @@ void Spell::EffectDummy(SpellEffectEntry const* effect)
                     }
 
                     // Equilize the health of all targets based on the corresponding health percent
-                    float health_diff = (float)unitTarget->GetMaxHealth() / (float)m_caster->GetMaxHealth();
-                    unitTarget->SetHealth(m_caster->GetHealth() * health_diff);
+                    float health_diff = m_caster->GetMaxHealth() ? (float)unitTarget->GetMaxHealth() / (float)m_caster->GetMaxHealth() : 0.0f;
+                    unitTarget->SetHealth(uint32(m_caster->GetHealth() * health_diff));
                     return;
                 }
                 case 42287:                                 // Salvage Wreckage
@@ -12533,7 +12535,8 @@ void Spell::EffectFeedPet(SpellEffectEntry const* effect)
 
     uint32 count = 1;
     _player->DestroyItemCount(foodItem, count, true);
-    // TODO: fix crash when a spell has two effects, both pointed at the same item target
+    // Clear item target to prevent dangling pointer if another effect targets the same item
+    m_targets.setItemTarget(NULL);
 
     m_caster->CastCustomSpell(pet, effect->EffectTriggerSpell, &benefit, NULL, NULL, true);
 }

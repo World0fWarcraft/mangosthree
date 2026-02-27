@@ -2564,11 +2564,12 @@ void Unit::DealMeleeDamage(CalcDamageInfo* damageInfo, bool durabilityLoss)
                 alreadyDone.insert(*i);
                 uint32 damage = (*i)->GetModifier()->m_amount;
                 SpellEntry const* i_spellProto = (*i)->GetSpellProto();
-                // Calculate absorb resist ??? no data in opcode for this possibly unable to absorb or resist?
-                // uint32 absorb;
-                // uint32 resist;
-                // CalcAbsorbResist(pVictim, SpellSchools(spellProto->School), SPELL_DIRECT_DAMAGE, damage, &absorb, &resist);
-                // damage-=absorb + resist;
+
+                // Calculate absorb and resist for damage shield
+                uint32 absorb = 0;
+                uint32 resist = 0;
+                CalculateDamageAbsorbAndResist(pVictim, GetSpellSchoolMask(i_spellProto), SPELL_DIRECT_DAMAGE, damage, &absorb, &resist);
+                damage -= std::min(damage, absorb + resist);
 
                 pVictim->DealDamageMods(this, damage, NULL);
 
@@ -2582,7 +2583,7 @@ void Unit::DealMeleeDamage(CalcDamageInfo* damageInfo, bool durabilityLoss)
                 data << uint32(damage);                  // Damage
                 data << uint32(overkill);                // Overkill
                 data << uint32(i_spellProto->SchoolMask);
-                data << uint32(0);                       // FIXME: Resist
+                data << uint32(resist);                  // Resist
                 pVictim->SendMessageToSet(&data, true);
 
                 pVictim->DealDamage(this, damage, 0, SPELL_DIRECT_DAMAGE, GetSpellSchoolMask(i_spellProto), i_spellProto, true);
@@ -3668,9 +3669,11 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(const Unit* pVictim, WeaponAttackT
     {
         uint32 typeId = GetTypeId();
         /* It should have been !(((Creature*)this)->GetCreatureInfo()->ExtraFlags & CREATURE_FLAG_EXTRA_NO_CRUSH) but wrath doesn't have that? */
-        if ((typeId == TYPEID_UNIT && !(GetOwnerGuid() && GetOwner()->GetTypeId() == TYPEID_PLAYER)
+        Unit* tempOwner = GetOwner();
+        Unit* tempCharmer = GetCharmer();
+        if ((typeId == TYPEID_UNIT && !(GetOwnerGuid() && tempOwner && tempOwner->GetTypeId() == TYPEID_PLAYER)
             && !(static_cast<Creature const*>(this)->GetCreatureInfo()->ExtraFlags & CREATURE_FLAG_EXTRA_NO_CRUSH))
-            || (typeId == TYPEID_PLAYER && GetCharmerGuid() && GetCharmer()->GetTypeId() == TYPEID_UNIT))
+            || (typeId == TYPEID_PLAYER && GetCharmerGuid() && tempCharmer && tempCharmer->GetTypeId() == TYPEID_UNIT))
         {
             DEBUG_FILTER_LOG(LOG_FILTER_COMBAT, "RollMeleeOutcomeAgainst: CRUSHING %d)", tmp);
             return MELEE_HIT_CRUSHING;
@@ -8018,7 +8021,8 @@ uint32 Unit::SpellDamageBonusDone(Unit* pVictim, SpellEntry const* spellProto, u
         Unit::AuraList const& doneFromManaPctAuras = GetAurasByType(SPELL_AURA_MOD_DAMAGE_DONE_FROM_PCT_POWER);
         if (!doneFromManaPctAuras.empty())
         {
-            float powerPct = std::min(float(GetPower(POWER_MANA)) / GetMaxPower(POWER_MANA), 1.0f);
+            uint32 maxPower = GetMaxPower(POWER_MANA);
+            float powerPct = maxPower ? std::min(float(GetPower(POWER_MANA)) / maxPower, 1.0f) : 0.0f;
             for (Unit::AuraList::const_iterator itr = doneFromManaPctAuras.begin(); itr != doneFromManaPctAuras.end(); ++itr)
             {
                 if (GetSpellSchoolMask(spellProto) & (*itr)->GetModifier()->m_miscvalue)
@@ -8219,7 +8223,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* pVictim, SpellEntry const* spellProto, u
             // Drain Soul
             if (classOptions && classOptions->SpellFamilyFlags & UI64LIT(0x0000000000004000))
             {
-                if (pVictim->GetHealth() * 100 / pVictim->GetMaxHealth() <= 25)
+                if (pVictim->GetMaxHealth() && pVictim->GetHealth() * 100 / pVictim->GetMaxHealth() <= 25)
                 {
                     DoneTotalMod *= 4;
                 }
@@ -8848,7 +8852,8 @@ uint32 Unit::SpellHealingBonusDone(Unit* pVictim, SpellEntry const* spellProto, 
     AuraList const& mHealingFromHealthPct = GetAurasByType(SPELL_AURA_MOD_HEALING_DONE_FROM_PCT_HEALTH);
     if (!mHealingFromHealthPct.empty())
     {
-        float healthPct = std::max(0.0f, 1.0f - float(pVictim->GetHealth()) / pVictim->GetMaxHealth());
+        uint32 maxHealth = pVictim->GetMaxHealth();
+        float healthPct = maxHealth ? std::max(0.0f, 1.0f - float(pVictim->GetHealth()) / maxHealth) : 0.0f;
         for (AuraList::const_iterator i = mHealingFromHealthPct.begin();i != mHealingFromHealthPct.end(); ++i)
             if ((*i)->isAffectedOnSpell(spellProto))
             {

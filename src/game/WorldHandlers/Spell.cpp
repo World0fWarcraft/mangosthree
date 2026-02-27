@@ -92,7 +92,8 @@ class PrioritizeHealthUnitWraper
     public:
         explicit PrioritizeHealthUnitWraper(Unit* unit) : i_unit(unit)
         {
-            i_percent = unit->GetHealth() * 100 / unit->GetMaxHealth();
+            uint32 maxhealth = unit->GetMaxHealth();
+            i_percent = maxhealth ? unit->GetHealth() * 100 / maxhealth : 0;
         }
         Unit* getUnit() const { return i_unit; }
         uint32 getPercent() const { return i_percent; }
@@ -179,7 +180,7 @@ void SpellCastTargets::setSource(float x, float y, float z)
 void SpellCastTargets::setGOTarget(GameObject* target)
 {
     m_GOTarget = target;
-    m_GOTargetGUID = target->GetObjectGuid();
+    m_GOTargetGUID = target ? target->GetObjectGuid() : ObjectGuid();
     //    m_targetMask |= TARGET_FLAG_OBJECT;
 }
 
@@ -187,6 +188,7 @@ void SpellCastTargets::setItemTarget(Item* item)
 {
     if (!item)
     {
+        m_itemTarget = NULL;
         return;
     }
 
@@ -207,7 +209,7 @@ void SpellCastTargets::setTradeItemTarget(Player* caster)
 
 void SpellCastTargets::setCorpseTarget(Corpse* corpse)
 {
-    m_CorpseTargetGUID = corpse->GetObjectGuid();
+    m_CorpseTargetGUID = corpse ? corpse->GetObjectGuid() : ObjectGuid();
 }
 
 void SpellCastTargets::Update(Unit* caster)
@@ -8270,7 +8272,7 @@ uint32 Spell::CalculatePowerCost(SpellEntry const* spellInfo, Unit* caster, Spel
                 break;
             case POWER_RUNE:
             case POWER_RUNIC_POWER:
-                DEBUG_LOG("Spell::CalculateManaCost: Not implemented yet!");
+                powerCost += manaCostPct * caster->GetMaxPower(Powers(spellInfo->powerType)) / 100;
                 break;
             default:
                 sLog.outError("Spell::CalculateManaCost: Unknown power type '%d' in spell %d", spellInfo->powerType, spellInfo->Id);

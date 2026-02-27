@@ -7063,7 +7063,7 @@ void  Aura::HandleAuraModIncreaseMaxHealth(bool apply, bool /*Real*/)
 {
     Unit* target = GetTarget();
     uint32 oldhealth = target->GetHealth();
-    double healthPercentage = (double)oldhealth / (double)target->GetMaxHealth();
+    double healthPercentage = target->GetMaxHealth() ? (double)oldhealth / (double)target->GetMaxHealth() : 0.0;
 
     target->HandleStatModifier(UNIT_MOD_HEALTH, TOTAL_VALUE, float(m_modifier.m_amount), apply);
 
@@ -9640,7 +9640,8 @@ void Aura::PeriodicDummyTick()
             if (spell->SpellIconID == 2983)
             {
                 Unit* victim = target->getVictim();
-                if (victim && (target->GetHealth() * 100 / target->GetMaxHealth() > victim->GetHealth() * 100 / victim->GetMaxHealth()))
+                if (victim && target->GetMaxHealth() && victim->GetMaxHealth() &&
+                    (target->GetHealth() * 100 / target->GetMaxHealth() > victim->GetHealth() * 100 / victim->GetMaxHealth()))
                 {
                     if (!target->HasAura(58670))
                     {
