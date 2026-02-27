@@ -34,6 +34,8 @@ struct FactionTemplateEntry;
 
 class Player; // forward declaration
 
+typedef uint32 TaxiMask[2]; 
+
 class PlayerTaxi
 {
     public:

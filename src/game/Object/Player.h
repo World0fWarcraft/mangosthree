@@ -25,11 +25,11 @@
 #ifndef MANGOS_H_PLAYER
 #define MANGOS_H_PLAYER
 
+#include "Unit.h"
+#include "PlayerTaxi.h" // Player needs full PlayerTaxi
 #include "Common.h"
 #include "ItemPrototype.h"
-#include "Unit.h"
 #include "Item.h"
-#include "PlayerTaxi.h"
 
 #include "Database/DatabaseEnv.h"
 #include "NPCHandler.h"
