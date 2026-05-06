@@ -38,7 +38,7 @@ static uint32 ReputationRankStrIndex[MAX_REPUTATION_RANK] =
 
  /**********************************************************************
      CommandTable : characterCommandTable
-  **********************************************************************/
+  ***********************************************************************/
 
 bool ChatHandler::HandleCharacterAchievementsCommand(char* args)
 {
@@ -272,7 +272,7 @@ bool ChatHandler::HandleCharacterReputationCommand(char* args)
 
 /**********************************************************************
     CommandTable : characterDeletedCommandTable
- **********************************************************************/
+ ***********************************************************************/
 
 /**
  * Collects all GUIDs (and related info) from deleted characters which are still in the database.
@@ -618,7 +618,7 @@ bool ChatHandler::HandleCharacterDeletedOldCommand(char* args)
 
 /**********************************************************************
     CommandTable : commandTable
- **********************************************************************/
+ ***********************************************************************/
 
 void ChatHandler::HandleCharacterLevel(Player* player, ObjectGuid player_guid, uint32 oldlevel, uint32 newlevel)
 {
@@ -1187,13 +1187,17 @@ bool ChatHandler::HandleAddItemCommand(char* args)
 
     Item* item = plTarget->StoreNewItem(dest, itemId, true, Item::GenerateItemRandomPropertyId(itemId));
 
-    // remove binding (let GM give it to another player later)
+    // Remove binding (let GM give it to another player later)
     if (pl == plTarget)
+    {
         for (ItemPosCountVec::const_iterator itr = dest.begin(); itr != dest.end(); ++itr)
+        {
             if (Item* item1 = pl->GetItemByPos(itr->pos))
             {
                 item1->SetBinding(false);
             }
+        }
+    }
 
     if (count > 0 && item)
     {

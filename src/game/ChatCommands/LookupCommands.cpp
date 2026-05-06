@@ -33,7 +33,7 @@
 
  /**********************************************************************
       CommandTable : lookupCommandTable
-  **********************************************************************/
+  ***********************************************************************/
 
 
 bool ChatHandler::LookupPlayerSearchCommand(QueryResult* result, uint32* limit)
@@ -1321,3 +1321,4 @@ bool ChatHandler::HandleLookupTaxiNodeCommand(char* args)
     }
     return true;
 }
+

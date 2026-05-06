@@ -32,7 +32,7 @@
 
  /**********************************************************************
      CommandTable : commandTable
-  **********************************************************************/
+  ***********************************************************************/
 
 bool ChatHandler::HandleBankCommand(char* /*args*/)
 {
@@ -354,6 +354,5 @@ bool ChatHandler::HandleResetAllCommand(char* args)
     {
         plr->SetAtLoginFlag(atLogin);
     });
-
     return true;
 }
