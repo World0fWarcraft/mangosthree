@@ -638,6 +638,9 @@ bool MySqlPreparedStatement::prepare()
     return true;
 }
 
+/**
+ * Binds the prepared statement input parameters from the supplied holder.
+ */
 void MySqlPreparedStatement::bind(const SqlStmtParameters& holder)
 {
     if (!isPrepared())
@@ -677,6 +680,9 @@ void MySqlPreparedStatement::bind(const SqlStmtParameters& holder)
     }
 }
 
+/**
+ * Adds a single bound parameter to the MySQL bind array at the given index.
+ */
 void MySqlPreparedStatement::addParam(unsigned int nIndex, const SqlStmtFieldData& data)
 {
     MANGOS_ASSERT(m_pInputArgs);
@@ -695,6 +701,9 @@ void MySqlPreparedStatement::addParam(unsigned int nIndex, const SqlStmtFieldDat
     pData.buffer_length = data.type() == FIELD_STRING ? data.size() : 0;
 }
 
+/**
+ * Releases MySQL statement handles and bind buffers.
+ */
 void MySqlPreparedStatement::RemoveBinds()
 {
     if (!m_stmt)
@@ -716,6 +725,9 @@ void MySqlPreparedStatement::RemoveBinds()
     m_bPrepared = false;
 }
 
+/**
+ * Executes the prepared MySQL statement.
+ */
 bool MySqlPreparedStatement::execute()
 {
     if (!isPrepared())
@@ -733,6 +745,9 @@ bool MySqlPreparedStatement::execute()
     return true;
 }
 
+/**
+ * Maps an internal prepared statement field type to a MySQL field type.
+ */
 enum_field_types MySqlPreparedStatement::ToMySQLType(const SqlStmtFieldData& data, bool& bUnsigned)
 {
     bUnsigned = 0;
